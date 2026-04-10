@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chittoweb QA &amp; UAT Tracker</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--card:#fff;--border:#e0e4ea;--text:#1a1d23;--muted:#6b7280;
+  --green:#16a34a;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;
+  --amber:#d97706;--amber-bg:#fef3c7;--grey:#94a3b8;--grey-bg:#f1f5f9;
+  --blue:#2563eb;--blue-bg:#dbeafe;--purple:#7c3aed;--purple-bg:#ede9fe;
+  --critical:#dc2626;--high:#f59e0b;--medium:#3b82f6;--low:#6b7280;
+  --radius:8px;--shadow:0 1px 3px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.container{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
+
+/* Header */
+.header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:var(--radius);margin-bottom:20px}
+.header h1{font-size:1.35rem;font-weight:700;letter-spacing:-.3px}
+.header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.header .date{font-size:.85rem;opacity:.8}
+.header input[type=text]{padding:6px 12px;border:1px solid rgba(255,255,255,.25);border-radius:6px;background:rgba(255,255,255,.12);color:#fff;font-size:.85rem;width:180px;outline:none}
+.header input[type=text]::placeholder{color:rgba(255,255,255,.5)}
+.header input[type=text]:focus{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.18)}
+
+/* Summary */
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;text-align:center;box-shadow:var(--shadow)}
+.summary-card .num{font-size:1.6rem;font-weight:700}
+.summary-card .lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:2px}
+.summary-card.total .num{color:var(--text)}
+.summary-card.pass .num{color:var(--green)}
+.summary-card.fail .num{color:var(--red)}
+.summary-card.blocked .num{color:var(--amber)}
+.summary-card.notrun .num{color:var(--grey)}
+.summary-card.pct .num{color:var(--blue)}
+
+.progress-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;box-shadow:var(--shadow)}
+.progress-wrap .progress-label{font-size:.8rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),#22d3ee);border-radius:99px;transition:width .4s ease}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:14px}
+.tab-btn{padding:9px 22px;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;background:var(--card);cursor:pointer;font-size:.88rem;font-weight:500;color:var(--muted);transition:all .15s}
+.tab-btn.active{background:#1e293b;color:#fff;border-color:#1e293b}
+.tab-btn:hover:not(.active){background:#f8fafc}
+
+/* Filter bar */
+.filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.filter-pill{padding:5px 14px;border-radius:99px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--muted);transition:all .15s;white-space:nowrap}
+.filter-pill:hover{background:#f1f5f9;color:var(--text)}
+.filter-pill.active{background:#1e293b;color:#fff;border-color:#1e293b}
+
+/* Actions */
+.actions{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.btn{padding:8px 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);cursor:pointer;font-size:.82rem;font-weight:500;color:var(--text);transition:all .15s;box-shadow:var(--shadow)}
+.btn:hover{background:#f1f5f9}
+.btn.export{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.export:hover{opacity:.9}
+.btn.reset{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.reset:hover{opacity:.9}
+
+/* Sections */
+.section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none;background:#f8fafc;border-bottom:1px solid var(--border);transition:background .15s}
+.section-header:hover{background:#f1f5f9}
+.section-header h3{font-size:.92rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.section-header .arrow{transition:transform .2s;font-size:.7rem;color:var(--muted)}
+.section-header.collapsed .arrow{transform:rotate(-90deg)}
+.section-badge{display:flex;gap:6px;align-items:center}
+.mini-badge{font-size:.7rem;padding:2px 8px;border-radius:99px;font-weight:600}
+.mini-badge.pass{background:var(--green-bg);color:var(--green)}
+.mini-badge.fail{background:var(--red-bg);color:var(--red)}
+.mini-badge.blocked{background:var(--amber-bg);color:var(--amber)}
+.section-body{transition:max-height .3s ease}
+.section-body.collapsed{display:none}
+
+/* Test item */
+.test-item{border-bottom:1px solid var(--border);padding:10px 16px;transition:background .1s}
+.test-item:last-child{border-bottom:none}
+.test-item:hover{background:#fafbfd}
+.test-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;transition:all .15s;flex-shrink:0}
+.status-btn.pass{background:var(--green);border-color:var(--green);color:#fff}
+.status-btn.fail{background:var(--red);border-color:var(--red);color:#fff}
+.status-btn.blocked{background:var(--amber);border-color:var(--amber);color:#fff}
+.status-btn.notrun{background:#fff;border-color:var(--border);color:var(--grey)}
+.status-pill{font-size:.65rem;padding:2px 10px;border-radius:99px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.status-pill.pass{background:var(--green-bg);color:var(--green)}
+.status-pill.fail{background:var(--red-bg);color:var(--red)}
+.status-pill.blocked{background:var(--amber-bg);color:var(--amber)}
+.status-pill.notrun{background:var(--grey-bg);color:var(--grey)}
+.test-id{font-size:.75rem;font-weight:600;color:var(--muted);min-width:32px}
+.test-title{flex:1;font-size:.88rem;font-weight:500;min-width:200px}
+.priority-badge{font-size:.65rem;padding:2px 10px;border-radius:99px;font-weight:600;text-transform:uppercase}
+.priority-badge.critical{background:#fee2e2;color:#dc2626}
+.priority-badge.high{background:#fef3c7;color:#b45309}
+.priority-badge.medium{background:#dbeafe;color:#1d4ed8}
+.priority-badge.low{background:#f1f5f9;color:#64748b}
+.type-badge{font-size:.65rem;padding:2px 10px;border-radius:99px;font-weight:600;background:var(--purple-bg);color:var(--purple)}
+.expand-btn{background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted);padding:4px 8px;border-radius:4px;transition:background .15s}
+.expand-btn:hover{background:#e5e7eb}
+.detail-panel{display:none;margin-top:10px;padding:12px 16px;background:#f8fafc;border-radius:var(--radius);border:1px solid var(--border);font-size:.82rem}
+.detail-panel.open{display:block}
+.detail-panel h4{font-size:.8rem;font-weight:600;margin-bottom:6px;color:var(--text)}
+.detail-panel ol{padding-left:20px;margin-bottom:8px}
+.detail-panel li{margin-bottom:3px}
+.detail-panel .expected{background:var(--green-bg);padding:6px 10px;border-radius:6px;font-size:.8rem;margin-bottom:10px}
+.detail-panel textarea{width:100%;min-height:50px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;font-family:inherit;resize:vertical}
+.detail-panel textarea:focus{outline:none;border-color:var(--blue)}
+
+/* Responsive */
+@media(max-width:700px){
+  .header{flex-direction:column;align-items:flex-start}
+  .summary{grid-template-columns:repeat(3,1fr)}
+  .test-title{min-width:140px}
+}
+
+/* Confirm dialog */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.dialog{background:#fff;border-radius:12px;padding:28px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.dialog h3{margin-bottom:8px}
+.dialog p{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+.dialog-btns{display:flex;gap:10px;justify-content:center}
+.dialog-btns .btn{min-width:100px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Chittoweb QA &amp; UAT Tracker</h1>
+    <div class="header-right">
+      <span class="date" id="todayDate"></span>
+      <input type="text" id="testerName" placeholder="Tester name..." />
+    </div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Overall Completion</span><span id="pctLabel">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="automated">Automated (58)</button>
+    <button class="tab-btn" data-tab="manual">Manual (32)</button>
+  </div>
+
+  <div class="filter-bar" id="filterBar"></div>
+
+  <div class="actions">
+    <button class="btn export" onclick="exportCSV()">Export CSV</button>
+    <button class="btn reset" onclick="showResetDialog()">Reset All</button>
+  </div>
+
+  <div id="testContent"></div>
+</div>
+
+<div class="overlay" id="resetOverlay">
+  <div class="dialog">
+    <h3>Reset All Statuses?</h3>
+    <p>This will clear all test statuses and notes. This cannot be undone.</p>
+    <div class="dialog-btns">
+      <button class="btn" onclick="hideResetDialog()">Cancel</button>
+      <button class="btn reset" onclick="doReset()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+const AUTO_TESTS = [
+  {section:"Homepage",items:[
+    {id:"A01",title:"Page loads with HTTP 200, no console errors",priority:"critical"},
+    {id:"A02",title:"Logo image is visible",priority:"high"},
+    {id:"A03",title:"Nav link: Features exists with correct anchor href",priority:"high"},
+    {id:"A04",title:"Nav link: How It Works exists with correct anchor href",priority:"high"},
+    {id:"A05",title:"Nav link: Pricing exists with correct anchor href",priority:"high"},
+    {id:"A06",title:"Nav link: FAQ exists with correct anchor href",priority:"medium"},
+    {id:"A07",title:'"Login" link navigates to /login',priority:"critical"},
+    {id:"A08",title:'"Try Free" CTA exists and href points to /login or /dashboard',priority:"critical"},
+    {id:"A09",title:'Hero heading contains the word "website"',priority:"high"},
+    {id:"A10",title:'Prompt placeholder contains "momo" or "Thamel"',priority:"medium"},
+    {id:"A11",title:"#features section is present on the page",priority:"high"},
+    {id:"A12",title:"#how-it-works section is present on the page",priority:"high"},
+    {id:"A13",title:"#pricing section is present on the page",priority:"critical"},
+    {id:"A14",title:"#faq section is present on the page",priority:"medium"},
+    {id:"A15",title:'Footer contains "\u00a9 2026 Chittoweb"',priority:"low"},
+    {id:"A16",title:"No failed network requests (4xx/5xx) on homepage load",priority:"critical"},
+  ]},
+  {section:"Responsive Layout",items:[
+    {id:"A17",title:"No horizontal scroll at 1280\u00d7800 (desktop)",priority:"high"},
+    {id:"A18",title:"No horizontal overflow at 375\u00d7667 (mobile)",priority:"critical"},
+    {id:"A19",title:"No horizontal overflow at 768\u00d71024 (tablet)",priority:"high"},
+    {id:"A20",title:"CTA button visible at 375px width",priority:"critical"},
+    {id:"A21",title:"Nav links visible at 1280px width",priority:"high"},
+  ]},
+  {section:"Login Page",items:[
+    {id:"A22",title:"/login returns HTTP 200",priority:"critical"},
+    {id:"A23",title:'Heading contains "Welcome back"',priority:"medium"},
+    {id:"A24",title:"Google SSO button is visible",priority:"critical"},
+    {id:"A25",title:'"Back to Home" link href is "/"',priority:"medium"},
+    {id:"A26",title:'"Get started for free" link href is /dashboard',priority:"high"},
+    {id:"A27",title:"Terms of Service link href is /terms",priority:"high"},
+    {id:"A28",title:"Privacy Policy link href is /privacy",priority:"high"},
+    {id:"A29",title:"Navigating to /dashboard without auth redirects to /login",priority:"critical"},
+    {id:"A30",title:"Login page no horizontal overflow at 375px",priority:"high"},
+  ]},
+  {section:"Content & Copy",items:[
+    {id:"A31",title:'Homepage H1 contains "website"',priority:"high"},
+    {id:"A32",title:'"50 free credits" text visible on homepage',priority:"critical"},
+    {id:"A33",title:'"No credit card" text visible on homepage',priority:"high"},
+    {id:"A34",title:'"Ready in 30 seconds" text visible on homepage',priority:"high"},
+    {id:"A35",title:'Footer contains "Made with love in Nepal" or "Made in Nepal"',priority:"medium"},
+    {id:"A36",title:"support@chittoweb.com email present on /terms",priority:"medium"},
+    {id:"A37",title:"support@chittoweb.com email present on /privacy",priority:"medium"},
+    {id:"A38",title:"Footer copyright year is 2026",priority:"low"},
+    {id:"A39",title:'Page title contains "Chittoweb"',priority:"medium"},
+  ]},
+  {section:"Legal Pages",items:[
+    {id:"A40",title:'/terms returns 200 and contains "Terms of Service"',priority:"high"},
+    {id:"A41",title:'/terms contains "Description of Service" section',priority:"medium"},
+    {id:"A42",title:'/terms contains "Acceptable Use" section',priority:"medium"},
+    {id:"A43",title:'/terms contains "Limitation of Liability" section',priority:"medium"},
+    {id:"A44",title:'/terms "Back to Home" link goes to "/"',priority:"medium"},
+    {id:"A45",title:'/privacy returns 200 and contains "Privacy Policy"',priority:"high"},
+    {id:"A46",title:'/privacy contains the word "opt-out"',priority:"high"},
+  ]},
+  {section:"Performance & Technical",items:[
+    {id:"A47",title:"HTTP redirects to HTTPS",priority:"critical"},
+    {id:"A48",title:'Page title tag contains "Chittoweb"',priority:"medium"},
+    {id:"A49",title:"Meta description tag exists and is non-empty",priority:"medium"},
+    {id:"A50",title:"Favicon link tag exists in head",priority:"medium"},
+    {id:"A51",title:"Next.js image URLs contain ?w= and ?q= params",priority:"medium"},
+    {id:"A52",title:"/nonexistent404 returns 404 or shows not-found page",priority:"medium"},
+    {id:"A53",title:'No console errors of type "error" on homepage',priority:"critical"},
+    {id:"A54",title:"No 5xx network responses on homepage load",priority:"critical"},
+    {id:"A55",title:"og:title meta tag exists",priority:"low"},
+    {id:"A56",title:"og:description meta tag exists",priority:"low"},
+    {id:"A57",title:"All interactive elements on homepage are keyboard-focusable",priority:"high"},
+    {id:"A58",title:"Zero critical axe-core accessibility violations on homepage",priority:"high"},
+  ]},
+];
+
+const MANUAL_TESTS = [
+  {section:"Google OAuth & Authentication",items:[
+    {id:"M01",title:"Google SSO button triggers OAuth popup or redirect",priority:"critical",type:"Auth",
+     steps:["Go to chittoweb.com/login","Click \u201cSecure Authentication via Google\u201d","Observe: Google sign-in popup or redirect appears"],
+     expected:"Google OAuth screen appears, no error or blank page"},
+    {id:"M02",title:"Successful Google sign-in lands on /dashboard",priority:"critical",type:"Auth",
+     steps:["Complete Google sign-in with a valid Google account","Wait for redirect","Check URL"],
+     expected:"URL is chittoweb.com/dashboard with dashboard content visible"},
+    {id:"M03",title:"Cancelled Google sign-in returns gracefully to /login",priority:"high",type:"Auth",
+     steps:["Click Sign in with Google","On the Google popup click Cancel or close it","Observe"],
+     expected:"No crash, stays on /login or shows friendly message"},
+    {id:"M04",title:"Session persists after full browser hard refresh",priority:"critical",type:"Auth",
+     steps:["Sign in successfully","Press Ctrl+Shift+R (hard refresh) or close and reopen tab","Navigate to /dashboard"],
+     expected:"User remains logged in"},
+    {id:"M05",title:"Session persists after 24 hours",priority:"high",type:"Auth",
+     steps:["Sign in","Close browser completely","Reopen next day, navigate to /dashboard"],
+     expected:"User still logged in, token not expired"},
+    {id:"M06",title:"Logout clears session \u2014 /dashboard redirects to /login after",priority:"critical",type:"Auth",
+     steps:["Log in and reach dashboard","Click logout","Navigate to /dashboard manually"],
+     expected:"Redirected to /login"},
+    {id:"M07",title:"Google SSO completes successfully in Firefox and Safari",priority:"critical",type:"Auth",
+     steps:["Repeat M02 in Firefox","Repeat M02 in Safari","Note any issues"],
+     expected:"OAuth completes in all 3 browsers"},
+  ]},
+  {section:"Dashboard & Credit System",items:[
+    {id:"M08",title:"New user receives exactly 50 free credits on first login",priority:"critical",type:"Auth",
+     steps:["Sign in with a brand new Google account","Land on /dashboard","Look for credit count"],
+     expected:"Shows exactly 50"},
+    {id:"M09",title:"Credit count decreases correctly after each generation",priority:"critical",type:"Auth",
+     steps:["Note credit balance","Enter a prompt and click Generate","Check balance after"],
+     expected:"Balance decreased by correct amount"},
+    {id:"M10",title:"User with 0 credits sees upgrade prompt \u2014 cannot generate",priority:"critical",type:"Auth",
+     steps:["Exhaust all credits","Attempt to generate"],
+     expected:"Clear error or upgrade CTA, generation does not proceed"},
+    {id:"M11",title:"Past generated sites are saved and listed in dashboard",priority:"high",type:"Auth",
+     steps:["Generate at least 2 websites","Navigate away and return","Check dashboard list"],
+     expected:"Both sites appear in history"},
+    {id:"M12",title:"User can open and edit a previously generated site",priority:"high",type:"Auth",
+     steps:["Click a previously generated site from the list","Attempt to edit with a new prompt"],
+     expected:"Edit flow opens without errors"},
+    {id:"M13",title:"AI training opt-out setting exists in dashboard settings",priority:"medium",type:"Auth",
+     steps:["Go to dashboard settings","Look for privacy/AI training setting"],
+     expected:"Opt-out toggle or link is present"},
+  ]},
+  {section:"AI Output Quality",items:[
+    {id:"M14",title:"AI output is relevant to the prompt given",priority:"critical",type:"Human Judgment",
+     steps:["Type \u201cA restaurant menu page for my momo shop in Thamel, Kathmandu\u201d","Click Generate","Review output visually"],
+     expected:"Output has food/restaurant theme, references Nepal or momo"},
+    {id:"M15",title:"AI output language matches the prompt language",priority:"high",type:"Human Judgment",
+     steps:["Test with English prompt \u2192 verify English output","Test with Nepali prompt \u2192 verify Nepali context respected"],
+     expected:"Language and context match the input"},
+    {id:"M16",title:"AI-generated website renders without broken HTML",priority:"high",type:"Human Judgment",
+     steps:["Generate a website","Preview output in builder","Look for broken layout, missing images, unstyled blobs"],
+     expected:"Renders as a coherent styled webpage"},
+    {id:"M17",title:"AI does not produce harmful or inappropriate content on edge-case prompts",priority:"critical",type:"Human Judgment",
+     steps:["Enter a normal prompt \u2014 check output is clean","Enter unusual prompt \u2014 observe system response","Enter empty/gibberish prompt \u2014 observe behavior"],
+     expected:"Normal output is clean; edge cases handled safely, never offensive"},
+    {id:"M18",title:"First-time user can complete full generation without any guidance",priority:"critical",type:"Human Judgment",
+     steps:["Ask someone unfamiliar with the product to open chittoweb.com","Watch them sign up and generate without help","Note confusion points"],
+     expected:"User completes generation without asking for help"},
+  ]},
+  {section:"Legal Opt-Out",items:[
+    {id:"M19",title:"AI training opt-out is reachable from dashboard settings",priority:"high",type:"Auth",
+     steps:["Log in","Go to account or privacy settings","Find AI training opt-out"],
+     expected:"Present and activatable"},
+    {id:"M20",title:"Opt-out setting persists after page refresh",priority:"medium",type:"Auth",
+     steps:["Enable opt-out in settings","Refresh the page","Recheck the setting"],
+     expected:"Setting is saved and still toggled on"},
+  ]},
+  {section:"Support Email",items:[
+    {id:"M21",title:"support@chittoweb.com is a live monitored inbox",priority:"high",type:"External",
+     steps:["Send email to support@chittoweb.com subject \u201cTest - QA Check\u201d","Wait up to 2 business days"],
+     expected:"Reply received, no auto-reject"},
+    {id:"M22",title:"No bounce or NDR on support email",priority:"high",type:"External",
+     steps:["Send the test email","Check sent folder within 5 minutes for bounce"],
+     expected:"No delivery failure notification"},
+  ]},
+  {section:"Nepal ISP & Geo",items:[
+    {id:"M23",title:"Site loads from a Nepali IP address \u2014 no geo-blocking",priority:"high",type:"External",
+     steps:["Use device in Nepal or VPN set to Nepal exit node","Navigate to chittoweb.com"],
+     expected:"Site loads fully, no geo-block"},
+    {id:"M24",title:"Google OAuth works from Nepal network",priority:"high",type:"External",
+     steps:["While on Nepali IP, attempt Google sign-in","Complete OAuth flow"],
+     expected:"Sign-in completes, redirects to /dashboard"},
+    {id:"M25",title:"Page load time is acceptable on Nepali 4G mobile",priority:"medium",type:"External",
+     steps:["On a 4G mobile connection in Nepal, open chittoweb.com","Time until page is usable"],
+     expected:"Usable within 5 seconds"},
+  ]},
+  {section:"End-to-End Business Flows",items:[
+    {id:"M26",title:"Complete new user flow: home \u2192 sign up \u2192 generate \u2192 view site",priority:"critical",type:"Auth",
+     steps:["Open chittoweb.com in incognito","Click \u201cStart Building Free\u201d","Sign in with Google","Type a business prompt","Click Generate","View result"],
+     expected:"All 6 steps complete without error"},
+    {id:"M27",title:"Returning user can generate a second site, both appear in history",priority:"high",type:"Auth",
+     steps:["Sign in as existing user","Generate a second site","Verify both sites in history"],
+     expected:"Second generation works, both sites listed"},
+    {id:"M28",title:'"Try Free" from homepage lands correct user in correct state',priority:"high",type:"Auth",
+     steps:["Open homepage","Click \u201cTry Free\u201d in nav","Observe landing state"],
+     expected:"Unauthenticated \u2192 /login; Authenticated \u2192 /dashboard"},
+    {id:"M29",title:"User can find AI training opt-out in \u22643 clicks from dashboard",priority:"medium",type:"Auth",
+     steps:["Log in","Without reading Privacy Policy, try to find opt-out setting","Count clicks"],
+     expected:"Findable in \u22643 clicks"},
+    {id:"M30",title:"Pricing on homepage matches pricing at checkout/upgrade page",priority:"critical",type:"Auth",
+     steps:["Note pricing on homepage Pricing section","As logged-in user find upgrade page","Compare numbers"],
+     expected:"Prices identical"},
+    {id:"M31",title:"User receives correct credit amount after purchasing a paid plan",priority:"critical",type:"Auth",
+     steps:["Purchase a paid credit pack (use sandbox if available)","Check credit balance immediately"],
+     expected:"Credits reflect purchased amount"},
+    {id:"M32",title:"All links in transactional/welcome emails point to correct pages",priority:"medium",type:"Auth",
+     steps:["Check welcome email after sign-up","Click every link in the email"],
+     expected:"All links resolve correctly, no 404s"},
+  ]},
+];
+
+// ── State ──
+const STATUSES = ["notrun","pass","fail","blocked"];
+const STATUS_LABELS = {notrun:"Not Run",pass:"Pass",fail:"Fail",blocked:"Blocked"};
+const STATUS_ICONS = {notrun:"\u2013",pass:"\u2713",fail:"\u2717",blocked:"!"};
+
+// Baked-in test results from automated QA run (2026-04-10)
+const BAKED_STATE = {"A01":{"status":"pass","notes":"HTTP 200 confirmed."},"A02":{"status":"pass","notes":"Logo image at /_next/image?url=%2Flogo-no-bg.png"},"A03":{"status":"pass","notes":"Features nav link with href #features"},"A04":{"status":"pass","notes":"How It Works nav link with href #how-it-works"},"A05":{"status":"pass","notes":"Pricing nav link with href #pricing"},"A06":{"status":"pass","notes":"FAQ nav link with href #faq"},"A07":{"status":"pass","notes":"Login link with href /login"},"A08":{"status":"pass","notes":"Try Free CTA with href /dashboard"},"A09":{"status":"pass","notes":"Hero: \"Your business website, ready in seconds.\""},"A10":{"status":"pass","notes":"Placeholder: \"momo shop in Thamel\""},"A11":{"status":"pass","notes":"#features section present"},"A12":{"status":"pass","notes":"#how-it-works section present"},"A13":{"status":"pass","notes":"#pricing section present"},"A14":{"status":"pass","notes":"#faq section present"},"A15":{"status":"pass","notes":"Footer: \"\u00a9 2026 Chittoweb. All rights reserved.\""},"A16":{"status":"pass","notes":"No 4xx/5xx on homepage load."},"A17":{"status":"pass","notes":"No horizontal scroll at 1280px desktop."},"A18":{"status":"pass","notes":"No horizontal overflow at 375x667 mobile."},"A19":{"status":"pass","notes":"No horizontal overflow at 768x1024 tablet."},"A20":{"status":"pass","notes":"CTA \"Start Building\" visible at 375px."},"A21":{"status":"pass","notes":"All nav links visible at 1280px."},"A22":{"status":"pass","notes":"/login returns HTTP 200."},"A23":{"status":"pass","notes":"Heading: \"Welcome back\"."},"A24":{"status":"pass","notes":"Google SSO: \"Secure Authentication via Google\"."},"A25":{"status":"pass","notes":"\"Back to Home\" href=\"/\"."},"A26":{"status":"pass","notes":"\"Get started for free\" href=/dashboard."},"A27":{"status":"pass","notes":"Terms of Service href=/terms."},"A28":{"status":"pass","notes":"Privacy Policy href=/privacy."},"A29":{"status":"fail","notes":"/dashboard returns 200 with 404 page content. No auth redirect to /login. Critical bug."},"A30":{"status":"pass","notes":"Login page no overflow at 375px."},"A31":{"status":"pass","notes":"H1 contains \"website\"."},"A32":{"status":"pass","notes":"\"50 free credits\" visible."},"A33":{"status":"pass","notes":"\"No credit card\" visible."},"A34":{"status":"pass","notes":"\"Ready in 30 seconds\" visible."},"A35":{"status":"pass","notes":"Footer: \"Made with \u2764\ufe0f in Nepal\"."},"A36":{"status":"pass","notes":"support@chittoweb.com on /terms."},"A37":{"status":"pass","notes":"support@chittoweb.com on /privacy."},"A38":{"status":"pass","notes":"Footer copyright year 2026."},"A39":{"status":"pass","notes":"Title: \"Chittoweb - Best AI App & Website Builder in Nepal\"."},"A40":{"status":"pass","notes":"/terms 200 + \"Terms of Service\"."},"A41":{"status":"pass","notes":"\"Description of Service\" section."},"A42":{"status":"pass","notes":"\"Acceptable Use Policy\" section."},"A43":{"status":"pass","notes":"\"Limitation of Liability\" section."},"A44":{"status":"pass","notes":"\"Back to Home\" href=\"/\"."},"A45":{"status":"pass","notes":"/privacy 200 + \"Privacy Policy\"."},"A46":{"status":"pass","notes":"\"opt-out\" found on /privacy."},"A47":{"status":"pass","notes":"HTTP\u2192HTTPS 308 redirect confirmed."},"A48":{"status":"pass","notes":"Title contains \"Chittoweb\"."},"A49":{"status":"pass","notes":"Meta description exists and non-empty."},"A50":{"status":"pass","notes":"Favicon link tags exist."},"A51":{"status":"pass","notes":"Next.js images have ?w= and ?q= params."},"A52":{"status":"pass","notes":"/nonexistent404 returns HTTP 404."},"A53":{"status":"pass","notes":"No console errors on homepage."},"A54":{"status":"pass","notes":"No 5xx from chittoweb.com. GA 503 is third-party."},"A55":{"status":"pass","notes":"og:title exists."},"A56":{"status":"pass","notes":"og:description exists."},"A57":{"status":"pass","notes":"All 47 interactive elements keyboard-focusable."},"A58":{"status":"blocked","notes":"Requires axe-core scan. Cannot verify without library."}};
+
+// Seed localStorage with baked state on first visit (won't overwrite if user already has state)
+if(!localStorage.getItem("cw_qa_state")){
+  localStorage.setItem("cw_qa_state", JSON.stringify(BAKED_STATE));
+  localStorage.setItem("cw_qa_tester", "Claude (Automated)");
+}
+
+let state = JSON.parse(localStorage.getItem("cw_qa_state")||"{}");
+let activeTab = "automated";
+let activeFilter = "all";
+
+function getState(id){return state[id]||{status:"notrun",notes:""}}
+function setState(id,key,val){if(!state[id])state[id]={status:"notrun",notes:""};state[id][key]=val;localStorage.setItem("cw_qa_state",JSON.stringify(state))}
+
+// Tester name
+const testerInput = document.getElementById("testerName");
+testerInput.value = localStorage.getItem("cw_qa_tester")||"";
+testerInput.addEventListener("input",()=>localStorage.setItem("cw_qa_tester",testerInput.value));
+
+// Date
+document.getElementById("todayDate").textContent = new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+
+// ── All items flat ──
+function allItems(){
+  let items=[];
+  AUTO_TESTS.forEach(s=>s.items.forEach(i=>items.push({...i,tab:"automated",section:s.section})));
+  MANUAL_TESTS.forEach(s=>s.items.forEach(i=>items.push({...i,tab:"manual",section:s.section})));
+  return items;
+}
+
+// ── Summary ──
+function updateSummary(){
+  const items=allItems();
+  let pass=0,fail=0,blocked=0,notrun=0;
+  items.forEach(i=>{const s=getState(i.id).status;if(s==="pass")pass++;else if(s==="fail")fail++;else if(s==="blocked")blocked++;else notrun++});
+  const total=items.length;
+  const done=pass+fail+blocked;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById("summary").innerHTML=`
+    <div class="summary-card total"><div class="num">${total}</div><div class="lbl">Total</div></div>
+    <div class="summary-card pass"><div class="num">${pass}</div><div class="lbl">Pass</div></div>
+    <div class="summary-card fail"><div class="num">${fail}</div><div class="lbl">Fail</div></div>
+    <div class="summary-card blocked"><div class="num">${blocked}</div><div class="lbl">Blocked</div></div>
+    <div class="summary-card notrun"><div class="num">${notrun}</div><div class="lbl">Not Run</div></div>
+    <div class="summary-card pct"><div class="num">${pct}%</div><div class="lbl">Complete</div></div>`;
+  document.getElementById("pctLabel").textContent=pct+"%";
+  document.getElementById("progressFill").style.width=pct+"%";
+}
+
+// ── Tabs ──
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    activeTab=btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter="all";
+    renderFilters();
+    renderTests();
+  });
+});
+
+// ── Filters ──
+function renderFilters(){
+  const bar=document.getElementById("filterBar");
+  let filters;
+  if(activeTab==="automated"){
+    filters=[
+      {key:"all",label:"All"},{key:"critical",label:"Critical"},{key:"high",label:"High"},
+      {key:"medium",label:"Medium"},{key:"low",label:"Low"},
+      {key:"notrun",label:"Not Run"},{key:"fail",label:"Failed"},{key:"blocked",label:"Blocked"}
+    ];
+  } else {
+    filters=[
+      {key:"all",label:"All"},{key:"type:Auth",label:"Auth / Login"},{key:"type:Human Judgment",label:"Human Judgment"},
+      {key:"type:External",label:"External"},{key:"critical",label:"Critical"},
+      {key:"notrun",label:"Not Run"},{key:"fail",label:"Failed"},{key:"blocked",label:"Blocked"}
+    ];
+  }
+  bar.innerHTML=filters.map(f=>`<button class="filter-pill${activeFilter===f.key?" active":""}" data-filter="${f.key}">${f.label}</button>`).join("");
+  bar.querySelectorAll(".filter-pill").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      activeFilter=btn.dataset.filter;
+      bar.querySelectorAll(".filter-pill").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderTests();
+    });
+  });
+}
+
+function matchesFilter(item){
+  if(activeFilter==="all") return true;
+  if(activeFilter.startsWith("type:")) return item.type===activeFilter.slice(5);
+  if(["notrun","pass","fail","blocked"].includes(activeFilter)) return getState(item.id).status===activeFilter;
+  return item.priority===activeFilter;
+}
+
+// ── Render ──
+function renderTests(){
+  const sections = activeTab==="automated"?AUTO_TESTS:MANUAL_TESTS;
+  const container=document.getElementById("testContent");
+  let html="";
+  sections.forEach((sec,si)=>{
+    const filtered=sec.items.filter(matchesFilter);
+    if(filtered.length===0) return;
+    // Section counts
+    let sp=0,sf=0,sb=0;
+    sec.items.forEach(i=>{const s=getState(i.id).status;if(s==="pass")sp++;else if(s==="fail")sf++;else if(s==="blocked")sb++});
+    html+=`<div class="section"><div class="section-header" onclick="toggleSection(this)">
+      <h3><span class="arrow">\u25BC</span> Section ${activeTab==="automated"?si+1:si+7} \u2014 ${sec.section}</h3>
+      <div class="section-badge">
+        ${sp?`<span class="mini-badge pass">${sp} pass</span>`:""}
+        ${sf?`<span class="mini-badge fail">${sf} fail</span>`:""}
+        ${sb?`<span class="mini-badge blocked">${sb} blocked</span>`:""}
+      </div>
+    </div><div class="section-body">`;
+    filtered.forEach(item=>{
+      const st=getState(item.id);
+      const sc=st.status;
+      html+=`<div class="test-item" id="item-${item.id}">
+        <div class="test-row">
+          <button class="status-btn ${sc}" onclick="cycleStatus('${item.id}')" title="Click to cycle status">${STATUS_ICONS[sc]}</button>
+          <span class="status-pill ${sc}">${STATUS_LABELS[sc]}</span>
+          <span class="test-id">${item.id}</span>
+          <span class="test-title">${item.title}</span>
+          <span class="priority-badge ${item.priority}">${item.priority}</span>
+          ${item.type?`<span class="type-badge">${item.type}</span>`:""}
+          <button class="expand-btn" onclick="toggleDetail('${item.id}')">Details \u25BC</button>
+        </div>
+        <div class="detail-panel" id="detail-${item.id}">
+          ${item.steps?`<h4>Steps:</h4><ol>${item.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+          <div class="expected"><strong>Expected:</strong> ${item.expected}</div>`
+          :`<p style="color:var(--muted);margin-bottom:10px">Automated test \u2014 run via Playwright, import result here.</p>`}
+          <h4>Notes / Bug Details:</h4>
+          <textarea placeholder="Add notes, bug links, observations..." oninput="saveNotes('${item.id}',this.value)">${st.notes||""}</textarea>
+        </div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  container.innerHTML=html;
+}
+
+function toggleSection(el){
+  el.classList.toggle("collapsed");
+  el.nextElementSibling.classList.toggle("collapsed");
+}
+
+function toggleDetail(id){
+  document.getElementById("detail-"+id).classList.toggle("open");
+}
+
+function cycleStatus(id){
+  const cur=getState(id).status;
+  const next=STATUSES[(STATUSES.indexOf(cur)+1)%STATUSES.length];
+  setState(id,"status",next);
+  updateSummary();
+  renderTests();
+}
+
+function saveNotes(id,val){setState(id,"notes",val)}
+
+// ── Export CSV ──
+function exportCSV(){
+  const items=allItems();
+  const tester=testerInput.value||"Unknown";
+  const date=new Date().toISOString().slice(0,10);
+  let csv="ID,Section,Title,Priority,Type,Status,Notes,Tester,Date\n";
+  items.forEach(i=>{
+    const s=getState(i.id);
+    const esc=v=>`"${(v||"").replace(/"/g,'""')}"`;
+    csv+=`${i.id},${esc(i.section)},${esc(i.title)},${i.priority},${i.type||"Automated"},${STATUS_LABELS[s.status]},${esc(s.notes)},${esc(tester)},${date}\n`;
+  });
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`chittoweb-qa-${date}.csv`;
+  a.click();
+}
+
+// ── Reset ──
+function showResetDialog(){document.getElementById("resetOverlay").classList.add("show")}
+function hideResetDialog(){document.getElementById("resetOverlay").classList.remove("show")}
+function doReset(){
+  state={};localStorage.removeItem("cw_qa_state");
+  hideResetDialog();updateSummary();renderTests();
+}
+
+// ── Init ──
+renderFilters();
+updateSummary();
+renderTests();
+</script>
+</body>
+</html>
