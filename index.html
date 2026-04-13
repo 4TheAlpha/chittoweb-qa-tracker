@@ -139,11 +139,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .dialog p{color:var(--muted);font-size:.9rem;margin-bottom:20px}
 .dialog-btns{display:flex;gap:10px;justify-content:center}
 .dialog-btns .btn{min-width:100px}
+@media(max-width:900px){
+  .container{padding:10px 12px 30px}
+  .top-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .top-tab{padding:10px 16px;font-size:.84rem;white-space:nowrap}
+  .sub-tab{padding:7px 14px;font-size:.8rem}
+  .test-row{gap:6px}
+  .test-title{min-width:150px;font-size:.84rem}
+  .section-header h3{font-size:.85rem}
+  .actions{gap:6px}
+  .btn{padding:7px 14px;font-size:.78rem}
+}
 @media(max-width:700px){
-  .header{flex-direction:column;align-items:flex-start}
-  .summary{grid-template-columns:repeat(3,1fr)}
-  .test-title{min-width:140px}
-  .master-summary .master-grid{grid-template-columns:repeat(3,1fr)}
+  .header{flex-direction:column;align-items:flex-start;padding:12px 14px;gap:8px}
+  .header h1{font-size:1.1rem}
+  .header-right{width:100%;justify-content:space-between}
+  .header input[type=text]{width:140px;font-size:.8rem;padding:5px 10px}
+  .master-summary{padding:12px 14px}
+  .master-summary .master-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+  .master-summary .master-card .num{font-size:1.2rem}
+  .summary{grid-template-columns:repeat(3,1fr);gap:6px}
+  .summary-card{padding:8px 6px}
+  .summary-card .num{font-size:1.3rem}
+  .top-tabs{gap:0;border-bottom:2px solid var(--border)}
+  .top-tab{padding:8px 12px;font-size:.78rem}
+  .sub-tabs{gap:2px}
+  .sub-tab{padding:6px 12px;font-size:.76rem}
+  .filter-bar,.phase-bar,.category-bar{padding:8px 10px;gap:4px}
+  .filter-pill,.cat-pill{padding:4px 10px;font-size:.72rem}
+  .section-header{padding:10px 12px}
+  .section-header h3{font-size:.84rem;flex-wrap:wrap}
+  .test-item{padding:8px 12px}
+  .test-row{gap:6px}
+  .test-id{font-size:.7rem;min-width:28px}
+  .test-title{min-width:0;flex:1;font-size:.82rem}
+  .priority-badge,.type-badge,.who-badge,.status-pill{font-size:.6rem;padding:2px 7px}
+  .status-btn{width:28px;height:28px;font-size:.6rem}
+  .detail-panel{padding:10px 12px;font-size:.78rem}
+  .detail-panel textarea{min-height:40px;font-size:.78rem}
+  .actions{gap:4px}
+  .btn{padding:6px 12px;font-size:.76rem}
+  .dialog{padding:20px;max-width:92%}
+}
+@media(max-width:420px){
+  .container{padding:6px 8px 24px}
+  .header h1{font-size:1rem}
+  .header .date{font-size:.75rem}
+  .header input[type=text]{width:120px}
+  .master-summary .master-card .num{font-size:1rem}
+  .master-summary .master-card .lbl{font-size:.55rem}
+  .summary{grid-template-columns:repeat(3,1fr);gap:4px}
+  .summary-card .num{font-size:1.1rem}
+  .summary-card .lbl{font-size:.6rem}
+  .top-tab{padding:7px 10px;font-size:.72rem}
+  .sub-tab{padding:5px 10px;font-size:.7rem}
+  .test-row{flex-wrap:wrap}
+  .test-title{min-width:100%;order:-1;font-size:.8rem}
+  .section-badge{flex-wrap:wrap;gap:4px}
+  .mini-badge{font-size:.6rem;padding:1px 6px}
+  .expand-btn{font-size:.7rem;padding:3px 6px}
 }
 </style>
 </head>
